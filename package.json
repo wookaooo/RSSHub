@@ -2,6 +2,24 @@
   "name": "rsshub",
   "version": "1.0.0",
   "description": "Make RSS Great Again!",
+  
+    "envId": "{{env.ENV_ID}}",
+  "framework": {
+    "name": "rsshub",
+    "plugins": {
+      "client": {
+        "use": "@cloudbase/framework-plugin-container",
+        "inputs": {
+          "mode": "low-cost",
+          "serviceName": "rsshub",
+          "servicePath": "/",
+          "containerPort": 1200,
+          "envVariables": {}
+        }
+      }
+    }
+  }
+  
   "main": "lib/pkg.js",
   "files": [
     "lib"
