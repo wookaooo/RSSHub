@@ -62,8 +62,6 @@ inputs:
   initTimeout: 3 # 初始化超时时间，单位秒
   environment: #  环境变量
     variables: #  环境变量对象
-    ASecretId: AKIDSJvY0CxzdZFfjXOsUv4xEKF1temGeafJ 
-    SecretKey: 96B0ZtsOhmcCesJHzY7Wd70P3JwweYwh
       TEST: value
   publicAccess: true # 是否开启公网访问
   installDependency: false # 是否在线安装依赖
