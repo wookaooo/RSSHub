@@ -1,7 +1,7 @@
 service: rsshub
 
 provider:
-  name: tencent
+  name: aws
   region: ap-singapore
   runtime: Nodejs12.16
   stage: dev
