@@ -21,3 +21,183 @@ functions:
       - http:
           path: /
           method: get
+
+
+#应用组织信息
+app: 'rsshub' # 应用名称。留空则默认取当前组件的实例名称为app名称。
+stage: '' # 环境名称。默认值是 dev。建议使用${env.STAGE}变量定义环境名称
+
+#组件信息
+component: scf # (必选) 组件名称，在该实例中为scf
+name: rsshub # (必选) 组件实例名称。
+
+#组件参数配置
+inputs:
+  name: rsshub # 云函数名称，默认为 ${name}-${stage}-${app}
+  namespace: default
+  role: SCF_QcsRole # 云函数执行角色
+  
+  # 1. 默认写法，新建特定命名的 cos bucket 并上传
+  src: ./src
+  # 2. src 为对象，并且制定忽略上传文件夹 node_modules
+  # src:
+  #   src: ./code
+  #   exclude:
+  #     - 'node_modules/**'
+  # 3. 指定 bucket name 和文件的方式，直接上传 cos 中的文件部署云函数
+  # src:
+  #    bucket: tinatest   # bucket name 存储桶名称
+  #    key: 'code.zip'      # bucket key 指定存储桶内的文件
+  # 4. 指定本地文件到 bucket
+  # src:
+  #   bucket: tinatest   # bucket name
+  #   src:         # 指定本地路径
+  type: event # 函数类型，默认为 event(事件类型)，web(web类型)
+  handler: index.main_handler #入口（函数类型为事件类型时生效）
+  entryFile: app.js #入口文件名（代码中无scf_bootstrap文件，且函数类型为web类型时生效）
+  runtime: Nodejs10.15 # 运行环境 默认 Nodejs10.15
+  region: ap-guangzhou # 函数所在区域
+  description: This is a function in ${app} application.
+  memorySize: 512 # 内存大小，单位MB
+  timeout: 20 # 函数执行超时时间，单位秒
+  initTimeout: 3 # 初始化超时时间，单位秒
+  environment: #  环境变量
+    variables: #  环境变量对象
+      TEST: value
+  publicAccess: true # 是否开启公网访问
+  installDependency: false # 是否在线安装依赖
+  vpcConfig: # 私有网络配置
+    vpcId: vpc-qu1zec4b # 私有网络的Id
+    subnetId: subnet-qhrdj4jk # 子网ID
+  cfs: # cfs配置
+    - cfsId: cfs-dpgo2hi1
+      mountInsId: cfs-dpgo2hi1
+      localMountDir: /mnt/
+      remoteMountDir: /
+  deadLetter: # 死信队列配置
+    type: deadLetterType
+    name: deadLetterName
+    filterType: deadLetterFilterType
+  layers: #layer配置
+    - name: scfLayer #  layer名称
+      version: 1 #  版本
+  cls: # 函数日志
+    logsetId: ClsLogsetId
+    topicId: ClsTopicId
+  eip: false # 是否开启固定IP
+  asyncRunEnable: false # 是否启用异步执行（长时间运行）
+  traceEnable: false # 是否状态追踪
+  msgTTL: 21600 # 消息保留时间，单位秒
+  retryNum: 2 # 重试次数
+  tags: #标签配置
+    key1: value1
+    key2: value2 # tags 的key value
+  ignoreTriggers: false # 是否忽略触发器部署
+  image: # 镜像配置
+    registryId: tcr-xxx # 容器镜像服务名称，企业版必须
+    imageType: personal # 镜像类型：personal - 个人，enterprise - 企业版，public - 镜像模板
+    imageUrl: ccr.ccs.tencentyun.com/sls-scf/nodejs_test:latest@sha256:xxx
+    command: node index.js # 容器启动命令
+    args: test # 容器启动参数
+  events: # 触发器
+    - timer: # 定时触发器
+        parameters:
+          # name: timer # 触发器名称，默认timer-${name}-${stage}
+          qualifier: $DEFAULT # 别名配置
+          cronExpression: '*/5 * * * * * *' # 每5秒触发一次
+          enable: true
+          argument: argument # 额外的参数
+    - apigw: # api网关触发器，已有apigw服务，配置触发器
+        parameters:
+          serviceName: serverless
+          serviceId: service-8dsikiq6
+          protocols:
+            - http
+          netTypes:
+            - OUTER
+          description: the serverless service
+          environment: release
+          endpoints:
+            - path: /users
+              method: POST
+            - path: /test/{abc}/{cde}
+              apiId: api-id
+              apiName: index
+              method: GET
+              description: Serverless REST API
+              enableCORS: true
+              responseType: HTML
+              serviceTimeout: 10
+              isBase64Encoded: false
+              isBase64Trigger: false
+              base64EncodedTriggerRules:
+                - name: Accept
+                  value:
+                    - image/jpeg
+                - name: Content_Type
+                  value:
+                    - image/jpeg
+              param:
+                - name: abc
+                  position: PATH
+                  required: true
+                  type: string
+                  defaultValue: abc
+                  desc: mytest
+                - name: cde
+                  position: PATH
+                  required: true
+                  type: string
+                  defaultValue: abc
+                  desc: mytest
+              function:
+                isIntegratedResponse: true
+                functionQualifier: $DEFAULT
+              usagePlan:
+                usagePlanId: 1111
+                usagePlanName: slscmp
+                usagePlanDesc: sls create
+                maxRequestNum: 1000
+              auth:
+                secretName: secret
+                secretIds:
+                  - xxx
+    - cos: # cos触发器
+        parameters:
+          qualifier: $DEFAULT # 别名配置
+          bucket: cli-appid.cos.ap-beijing.myqcloud.com
+          filter:
+            prefix: filterdir/
+            suffix: .jpg
+          events: 'cos:ObjectCreated:*'
+          enable: true
+    - cmq: # CMQ Topic 触发器
+        parameters:
+          qualifier: $DEFAULT # 别名配置
+          name: test-topic-queue
+          enable: true
+          filterType: 1 # 消息过滤类型，1为标签类型，2为路由匹配类型
+          filterKey: # 当 filterType 为1时表示消息过滤标签，当 filterType 为2时表示 Binding Key
+            - key1
+            - key2
+    - ckafka: # ckafka触发器
+        parameters:
+          qualifier: $DEFAULT # 别名配置
+          name: ckafka-xxx
+          topic: test
+          maxMsgNum: 999
+          retry: 10000
+          offset: latest
+          timeout: 60
+          enable: true
+    - cls: # cls 触发器
+        parameters:
+          qualifier: '$DEFAULT' # 别名配置
+          topicId: 'xxx-228b-42f5-aab5-7f740cc2fb11' # 日志主题 ID
+          maxWait: 60 # 最长等待时间，单位秒
+          enable: true
+    - mps: # mps 触发器
+        parameters:
+          qualifier: '$DEFAULT' # 别名配置
+          type: EditMediaTask # 事件类型
+          enable: true
