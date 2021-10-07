@@ -1,12 +1,13 @@
 service: rsshub
 
 provider:
-  name: aliyun
-  runtime: nodejs8
-  credentials: ~/.aliyuncli/credentials # path must be absolute
+  name: tencent
+  runtime: Nodejs12.16
+  stage: dev
+  credentials: ~/.tencentcloud/credentials.ini # must provide absolute path
 
 plugins:
-  - serverless-aliyun-function-compute
+  - serverless-tencent-scf
 
 package:
   exclude:
