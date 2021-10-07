@@ -1,5 +1,11 @@
 service: rsshub
 
+provider:
+  name: tencent
+  region: ap-singapore
+  runtime: Nodejs12.16
+  stage: dev
+  credentials: ~/.tencentcloud/credentials.ini # 必须提供绝对路径
 
 package:
   exclude:
