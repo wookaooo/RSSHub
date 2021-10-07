@@ -1,7 +1,6 @@
 service: rsshub
 
 provider:
-  name: tencent
   runtime: Nodejs12.16
   stage: dev
   credentials: ~/.tencentcloud/credentials.ini # must provide absolute path
