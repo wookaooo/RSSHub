@@ -6,8 +6,6 @@ provider:
   stage: dev
   credentials: ~/.tencentcloud/credentials.ini # must provide absolute path
 
-plugins:
-  - serverless-tencent-scf
 
 package:
   exclude:
